@@ -8,6 +8,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.select import Select
 
 
@@ -286,6 +287,10 @@ class BasePage(Page):
             return selected_language
 
         def select_language(self, value):
+            # Wait for the language selector to be clickable so that we avoid
+            # the Firefox-only issue where the language-selection click fails
+            # because the contributions popover obscures it.
+            self.wait.until(EC.element_to_be_clickable(self._language_locator))
             language_select = self.find_element(*self._language_locator)
             Select(language_select).select_by_value(value)
             self.wait.until(lambda s: '/{0}/'.format(value) in s.current_url)
